@@ -24,6 +24,17 @@ class MyApp extends StatelessWidget {
   }
 }
 
+class ColorChoies{
+  static const List<Color> colors = [
+    const Color(0xFF5A89E6),
+    const Color(0xFFF77B67),
+    const Color(0xFF5A89E6),
+
+
+  ];
+
+}
+
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
 

@@ -6,12 +6,60 @@ import 'package:uuid/uuid.dart';
 
 class TodoObject{
 
+
+
   String uuid;
   int sortID;
   String title;
   Color color;
   IconData icon;
-  Map<DateTime,List<Task>>
+  Map<DateTime,List<TaskObject>> tasks;
+
+
+  TodoObject(this.title, this.icon){
+    this.title = title;
+    this.icon = icon;
+    this.color = ColorChoies.colors[new Random().nextInt(ColorChoies.colors.length)];
+    tasks = new Map<DateTime,List<TaskObject>>();
+    this.uuid = new Uuid().v1();
+
+  }
+
+  TodoObject.import( String uuid, int sortID, String title, Color color, IconData icon, Map<DateTime,List<TaskObject>> tasks){
+    this.uuid = uuid;
+    this.sortID = sortID;
+    this.title = title;
+    this.color = color;
+    this.icon = icon;
+    this.tasks = tasks;
+  }
+
+  int taskAmount(){
+    int amount = 0;
+    tasks.values.forEach((list){
+      amount += list.length;
+    });
+    return amount;
+  }
+
+  double percentComplete(){
+    if(tasks.isEmpty){
+       return 1.0;
+    }else{
+      int completed = 0;
+      int amount = 0;
+      tasks.values.forEach((list){
+        amount += list.length;
+        list.forEach((task){
+          if(task.isCompleted()){
+            completed++;
+          }
+        });
+      });
+      return completed/amount;
+    }
+  }
+
 }
 
 
