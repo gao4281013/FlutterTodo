@@ -68,10 +68,10 @@ class TaskObject{
   String task;
   bool _completed;
 
-  TaskObject(this.date, this.task, this._completed){
+  TaskObject(this.date, this.task){
     this.date = date;
     this.task = task;
-    this._completed = _completed;
+    this._completed = false;
   }
 
   TaskObject.import(String task,DateTime date,bool completed){

@@ -1,4 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/animation.dart';
+import 'package:flutter/rendering.dart';
+import 'dart:ui';
+import 'dart:async';
+import 'CostumIcons.dart';
+import 'todo.dart';
+import 'package:flutter/foundation.dart';
+import 'CostumCheckboxTile.dart';
+import 'package:intl/intl.dart';
+import 'CostumAppbar.dart';
 
 void main() => runApp(new MyApp());
 
@@ -29,11 +39,32 @@ class ColorChoies{
     const Color(0xFF5A89E6),
     const Color(0xFFF77B67),
     const Color(0xFF5A89E6),
-
-
   ];
 
 }
+
+List<TodoObject> todos = [
+
+  new TodoObject.import("SOME_RANDOM_UUID", 1, "Custom", ColorChoies.colors[1], Icons.alarm, {
+    new DateTime(2018,5,24):[
+      new TaskObject(new DateTime(2018,5,24),"Meet Clients"),
+      new TaskObject(new DateTime(2018,5,24),"Coding"),
+      new TaskObject(new DateTime(2018,5,24),"Code for main.dart"),
+      new TaskObject(new DateTime(2018,5,24),"Flutter Study"),
+    ],
+    new DateTime(2018,5,25):[
+      new TaskObject(new DateTime(2018,5,24),"Meet Clients"),
+      new TaskObject(new DateTime(2018,5,24),"Coding"),
+      new TaskObject(new DateTime(2018,5,24),"Code for main.dart"),
+      new TaskObject(new DateTime(2018,5,24),"Flutter Study"),
+    ],
+  }),
+  new TodoObject("Personal", Icons.person),
+  new TodoObject("Work", Icons.work),
+  new TodoObject("Home", Icons.home),
+  new TodoObject("Wife", Icons.person),
+  new TodoObject("Bady", Icons.menu),
+];
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
@@ -117,4 +148,20 @@ class _MyHomePageState extends State<MyHomePage> {
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
+}
+
+class DetailPage extends StatefulWidget {
+  @override
+  _DetailPageState createState() => new _DetailPageState();
+}
+
+class _DetailPageState extends State<DetailPage> {
+  @override
+  Widget build(BuildContext context) {
+    return new Container();
+  }
+}
+
+class CustomScrollPhysics extends ScrollPhysics{
+
 }
