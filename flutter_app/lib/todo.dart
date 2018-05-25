@@ -80,7 +80,7 @@ class TaskObject{
     this._completed = completed;
   }
 
-  set completed(bool value) {
+  void setCompleted(bool value) {
     _completed = value;
   }
 

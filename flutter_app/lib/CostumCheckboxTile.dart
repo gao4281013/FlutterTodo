@@ -269,7 +269,7 @@ class CustomCheckboxListTile extends StatelessWidget{
     this.title,
     this.subtitle,
     this.secondary,
-    this.isThreeLine,
+    this.isThreeLine:false,
     this.dense,
     this.selected:false}):assert (value !=null),
           assert(isThreeLine != null),

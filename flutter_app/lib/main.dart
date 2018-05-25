@@ -279,13 +279,122 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin{
                                            )
                                        ),
                                        new Padding(
-                                           padding: null),
+                                           padding: const EdgeInsets.all(16.0),
+                                           child: new Column(
+                                             crossAxisAlignment: CrossAxisAlignment.center,
+                                             mainAxisSize: MainAxisSize.max,
+                                             mainAxisAlignment: MainAxisAlignment.center,
+                                             children: <Widget>[
+                                               new Expanded(
+                                                   child: new Row(
+                                                     crossAxisAlignment: CrossAxisAlignment.start,
+                                                     children: <Widget>[
+                                                       new Hero(
+                                                           tag: todoObject.uuid + "_icon",
+                                                           child: new Container(
+                                                             decoration: new BoxDecoration(
+                                                               shape: BoxShape.circle,
+                                                               border: new Border.all(color: Colors.grey.withAlpha(70),style: BorderStyle.solid,width: 1.0),
+                                                             ),
+                                                             child: new Padding(
+                                                                 padding: const EdgeInsets.all(8.0),
+                                                                 child: new Icon(todoObject.icon,color: todoObject.color),
+                                                             ),
+                                                           ),
+                                                       ),
+                                                       new Expanded(
+                                                           child: new Container(
+                                                             alignment: Alignment.topRight,
+                                                             child: new Hero(
+                                                                 tag: todoObject.uuid + "_move_vert",
+                                                                 child: new Material(
+                                                                   color: Colors.transparent,
+                                                                   type: MaterialType.transparency,
+                                                                   child: new IconButton(
+                                                                       icon: new Icon(Icons.more_vert,color: Colors.grey),
+                                                                       onPressed: (){}),
+                                                                 ),
+                                                             ),
+                                                           ),
+                                                       ),
+                                                     ],
+                                                   )),
+                                               new Padding(
+                                                   padding: const EdgeInsets.only(bottom: 8.0),
+                                                   child: new Align(
+                                                     alignment: Alignment.bottomLeft,
+                                                     child: new Hero(
+                                                         tag: todoObject.uuid + "_number_of_tasks",
+                                                         child: new Material(
+                                                           color: Colors.transparent,
+                                                           child: new Text(
+                                                             todoObject.taskAmount().toString()+"Tasks",
+                                                             style: new TextStyle(),
+                                                           ),
+                                                         )),
+
+                                                   ),
+                                               ),
+                                               new Padding(
+                                                 padding: const EdgeInsets.only(bottom: 20.0),
+                                                 child: new Align(
+                                                   alignment: Alignment.bottomLeft,
+                                                   child: new Hero(
+                                                       tag: todoObject.uuid + "_title",
+                                                       child: new Material(
+                                                         color: Colors.transparent,
+                                                         child: new Text(
+                                                           todoObject.title,
+                                                           style: new TextStyle(
+                                                             fontSize: 30.0
+                                                           ),
+                                                         ),
+                                                       )),
+
+                                                 ),
+                                               ),
+                                               new Align(
+                                                 alignment: Alignment.bottomLeft,
+                                                 child: new Hero(
+                                                     tag: todoObject.uuid + "_progress_bar",
+                                                     child: new Material(
+                                                       color: Colors.transparent,
+                                                       child: new Row(
+                                                         children: <Widget>[
+                                                           new Expanded(
+                                                               child: new LinearProgressIndicator(
+                                                                 value: percentComplete,
+                                                                 backgroundColor: Colors.grey.withAlpha(50),
+                                                                 valueColor: new AlwaysStoppedAnimation<Color>(todoObject.color),
+                                                               )),
+                                                           new Padding(
+                                                               padding: const EdgeInsets.only(left: 5.0),
+                                                               child: new Text(
+                                                                 (percentComplete * 100).round().toString()+"%",
+                                                               ),
+                                                           ),
+                                                         ],
+                                                       ),
+                                                     ),
+                                                 ),
+                                               )
+
+                                             ],
+                                           ),
+                                       ),
                                      ],
                                    ),
                                  ),
                                 ),
                             );
-                          }),
+                          },
+                          padding: const EdgeInsets.only(left: 40.0,right: 40.0),
+                          scrollDirection: Axis.horizontal,
+                          physics: new CustomScrollPhysics(),
+                          controller: scrollController,
+                          itemCount: todos.length,
+                          itemExtent: _width - 80,
+                          ),
 
                     ),
                   ],
@@ -322,13 +431,264 @@ class DetailPage extends StatefulWidget {
   _DetailPageState createState() => new _DetailPageState();
 }
 
-class _DetailPageState extends State<DetailPage> {
+class _DetailPageState extends State<DetailPage> with TickerProviderStateMixin{
+  double percentComplete;
+  AnimationController animationController;
+  double barPercent = 0.0;
+  Tween<double> animT;
+  AnimationController scaleAnimation;
+
+
+  @override
+  void initState() {
+    scaleAnimation = new AnimationController(vsync: this,duration: const Duration(milliseconds: 1000),lowerBound: 0.0,upperBound: 1.0);
+
+    percentComplete = widget.todoObject.percentComplete();
+    barPercent = percentComplete;
+    animationController = new AnimationController(vsync: this, duration: const Duration(milliseconds: 100))..addListener((){
+      setState(() {
+        barPercent = animT.lerp(animationController.value);
+      });
+    });
+    animT = new Tween(begin: percentComplete,end: percentComplete);
+    scaleAnimation.forward();
+    super.initState();
+  }
+
+  void updateBarPercent() async{
+    double newPercentComplete = widget.todoObject.percentComplete();
+    if(animationController.status == AnimationStatus.forward || animationController.status == AnimationStatus.completed){
+      animT.begin = newPercentComplete;
+      await animationController.reverse();
+    }else if (animationController.status == AnimationStatus.reverse || animationController.status == AnimationStatus.dismissed){
+      animT.end = newPercentComplete;
+      await animationController.forward();
+    }else{
+      print("wtf");
+    }
+    percentComplete = newPercentComplete;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return new Container();
+    return new Stack(
+      children: <Widget>[
+        new Hero(
+            tag: widget.todoObject.uuid + "_background",
+            child: new Container(
+              decoration: new BoxDecoration(
+                color: Colors.white,
+                borderRadius: new BorderRadius.circular(0.0),
+              ),
+            ),
+        ),
+        new Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: new AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0.0,
+            leading: new IconButton(
+                icon: new Icon(Icons.arrow_back,color: Colors.grey),
+                onPressed: (){
+                  Navigator.of(context).pop();
+                }
+                ),
+
+            actions: <Widget>[
+                new Hero(
+                    tag: widget.todoObject.uuid + "_more_vert",
+                    child: new Material(
+                      color: Colors.transparent,
+                      type: MaterialType.transparency,
+                      child: new IconButton(
+                          icon: new Icon(Icons.more_vert,color: Colors.grey), 
+                          onPressed: (){}),
+                    ),
+                ),
+            ],
+          ),
+          body: new Padding(
+              padding: const EdgeInsets.only(left: 40.0,right: 40.0,top: 35.0),
+              child: new Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.max,
+                children: <Widget>[
+                  new Padding(
+                      padding: const EdgeInsets.only(bottom: 30.0),
+                      child: new Align(
+                        alignment: Alignment.bottomLeft,
+                        child: new Hero(
+                            tag: widget.todoObject.uuid+"_icon",
+                            child: new Container(
+                              decoration: new BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: new Border.all(color: Colors.grey.withAlpha(70),style: BorderStyle.solid,width: 1.0),
+                              ),
+                              child: new Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: new Icon(widget.todoObject.icon,color: widget.todoObject.color),
+                              ),
+                            ),
+                        ),
+                      ),
+                  ),
+                  new Padding(
+                      padding: const EdgeInsets.only(bottom: 12.0),
+                      child: new Align(
+                        alignment: Alignment.bottomLeft,
+                        child: new Hero(
+                            tag: widget.todoObject.uuid+ "_member_of_tasks",
+                            child: new Material(
+                              color: Colors.transparent,
+                              child: new Text(
+                                widget.todoObject.taskAmount().toString()+"Tasks",
+                                style: new TextStyle(
+
+                                ),
+                              ),
+                            ),
+                        ),
+                      ),
+                  ),
+                  new Padding(
+                      padding: const EdgeInsets.only(bottom: 20.0),
+                      child: new Align(
+                        alignment: Alignment.bottomLeft,
+                        child: new Hero(
+                            tag: widget.todoObject.uuid + "_title",
+                            child: new Material(
+                              color: Colors.transparent,
+                              child: new Text(
+                                widget.todoObject.title,
+                                style: new TextStyle(
+                                  fontSize: 30.0,
+                                ),
+                              ),
+                            )),
+                      ),
+                  ),
+                  new Padding(
+                      padding: const EdgeInsets.only(bottom: 30.0),
+                      child: new Align(
+                        alignment: Alignment.bottomLeft,
+                        child: new Hero(
+                            tag: widget.todoObject.uuid + "_progress_bae",
+                            child: new Material(
+                              color: Colors.transparent,
+                              child: new Row(
+                                 children: <Widget>[
+                                   new Expanded(
+                                       child: new LinearProgressIndicator(
+                                         value: barPercent,
+                                         backgroundColor: Colors.grey.withAlpha(50),
+                                         valueColor: new AlwaysStoppedAnimation<Color>(widget.todoObject.color),
+                                       ),
+                                   ),
+                                   new Padding(
+                                       padding: const EdgeInsets.only(left: 5.0),
+                                       child: new Text(
+                                         (barPercent * 100).round().toString() + "%",
+                                       ),
+                                   ),
+                                 ],
+                              ),
+                            ),
+                        ),
+                      ),
+                  ),
+                  new Expanded(
+                      child: new ScaleTransition(
+                          scale: scaleAnimation,
+                          child: new ListView.builder(
+                              padding: const EdgeInsets.all(0.0),
+                              itemBuilder: (BuildContext context,int index){
+                                DateTime currentDate = widget.todoObject.tasks.keys.toList()[index];
+                                DateTime _now = new DateTime.now();
+                                DateTime today = new DateTime(_now.year,_now.month,_now.day);
+                                String dateString;
+                                if(currentDate.isBefore(today)){
+                                  dateString = "Previous -" + new DateFormat.E().format(currentDate);
+                                }else if(currentDate.isAtSameMomentAs(today)){
+                                  dateString = "Today";
+                                }else if(currentDate.isAtSameMomentAs(today.add(const Duration(days: 1)))){
+                                  dateString = "Tomorrow";
+                                }else{
+                                  dateString = new DateFormat.E().format(currentDate);
+                                }
+                                List<Widget> tasks = [new Text(dateString)];
+                                widget.todoObject.tasks[currentDate].forEach((task){
+                                  tasks.add(new CustomCheckboxListTile(
+                                     activeColor: widget.todoObject.color,
+                                      value: task.isCompleted(),
+                                      onChanged: (value){
+                                       setState(() {
+                                         task.setCompleted(value);
+                                         updateBarPercent();
+                                       });
+                                      },
+                                    title: new Text(task.task),
+                                    secondary: new Icon(Icons.alarm),
+                                  ));
+                                });
+                                return new Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: tasks,
+                                );
+                              },
+                            itemCount: widget.todoObject.tasks.length,
+                          ),
+                      ),
+                  ),
+                ],
+              ),
+          ),
+        ),
+      ],
+    );
   }
+
+
 }
 
 class CustomScrollPhysics extends ScrollPhysics{
 
+  final double numOfItems = todos.length.toDouble() -1;
+
+  CustomScrollPhysics({ScrollPhysics parent,}):super(parent: parent);
+
+  @override
+  ScrollPhysics applyTo(ScrollPhysics ancestor) {
+     return new CustomScrollPhysics(parent: buildParent(ancestor));
+  }
+
+  double _getPage(ScrollPosition position){
+    return position.pixels/(position.maxScrollExtent/numOfItems);
+  }
+
+  double _getPixels(ScrollPosition position,double page){
+    return page * (position.maxScrollExtent/numOfItems);
+  }
+
+  double _getTargetPixels(ScrollPosition position,Tolerance tolerance,double velocity){
+    double page = _getPage(position);
+    if(velocity <-tolerance.velocity)
+      page-= 0.5;
+    else if(velocity > tolerance.velocity)
+      page += 0.5;
+    return _getPixels(position, page.roundToDouble());
+  }
+
+  @override
+  Simulation createBallisticSimulation(ScrollMetrics position,
+      double velocity) {
+    if((velocity <= 0.0 && position.pixels <= position.minScrollExtent ) ||
+        (velocity >= 0.0 && position.pixels >= position.maxScrollExtent))
+      return super.createBallisticSimulation(position, velocity);
+    final Tolerance tolerance = this.tolerance;
+    final double target = _getTargetPixels(position, tolerance, velocity);
+    if(target != position.pixels){
+      return new ScrollSpringSimulation(spring, position.pixels, target, velocity);
+    }
+    return null;
+  }
 }
